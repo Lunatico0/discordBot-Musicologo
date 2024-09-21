@@ -14,7 +14,8 @@ export default {
       return interaction.reply({ content: 'No hay música reproduciéndose.', ephemeral: true });
     }
 
-    queue.node.destroy();
+    queue.delete();
+
     interaction.reply({ content: '⏹️ Música detenida y bot desconectado.' });
   }
 };

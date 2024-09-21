@@ -1,10 +1,10 @@
 import { useMainPlayer } from 'discord-player';
-// import {setTimeout as wait} from 'node:timers/promises'
+import { updatePlayerEmbed } from '../player.js'; // Asegúrate de importar esta función
 import Discord from 'discord.js';
 
 export default {
   data: new Discord.SlashCommandBuilder()
-    .setName('play') // Nombre del comando
+    .setName('play')
     .setDescription('query')
     .addStringOption((option) =>
       option
@@ -12,7 +12,7 @@ export default {
         .setDescription('El mensaje que quieres que escriba el bot')
         .setMinLength(3)
         .setMaxLength(100)
-        .setRequired(false)
+        .setRequired(true)
     ),
   execute: async (interaction) => {
     if (!interaction.inCachedGuild()) return;
@@ -24,34 +24,24 @@ export default {
     const query = await player.search(consulta, {
       requestedBy: interaction.user,
     });
-    if (query._data.tracks.length > 0) {
-      query._data.tracks.forEach(track => {
-        console.log(`titulo: ${track.title}, artista: ${track.author}, source: ${track.source}`);
-      });
-    }
 
     if (!query.hasTracks()) {
-
-      return interaction.editReply("Eroor no hay cancion");
+      return interaction.editReply("Error: No hay canción.");
     }
 
     try {
-      const { track, error } = await player.play(channel, query, {
+      await player.play(channel, query, {
         nodeOptions: {
           metadata: interaction,
-        },audioPlayerOptions:{queue:true},afterSearch:async ()=>{
-          await interaction.editReply(`Busqueda finalizada`)}
-      })
-      console.log(error)
-      if (!track) {
-        console.log("No se obtuvo un track válido.");
-        return interaction.editReply("No se pudo obtener el track para la reproducción.");
-      }
+        }
+      });
 
-      return
+      // Actualiza el embed con la canción actual y la cola
+      await updatePlayerEmbed(interaction, player);
+
     } catch (e) {
       console.error(e);
-      return interaction.editReply("Error:",e);
+      return interaction.editReply("Error al reproducir la canción.");
     }
   },
 };

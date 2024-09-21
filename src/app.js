@@ -4,6 +4,7 @@ import path from 'path';
 import { REST } from "@discordjs/rest";
 import { config } from "dotenv";
 import { initPlayer } from './player.js';
+import { handleInteraction } from './controller.js';
 
 config();
 const TOKEN = process.env.Musicologo_TOKEN;
@@ -18,7 +19,6 @@ client.commands = new Discord.Collection();
 
 
 (async () => {
-  // Lee y registra los comandos
   for (const commandFile of commandFiles) {
     try {
       const { default: command } = await import(`./commands/${commandFile}`);
@@ -34,7 +34,6 @@ client.commands = new Discord.Collection();
     }
   }
 
-  // Registrar comandos en Discord
   try {
     await rest.put(
       Discord.Routes.applicationGuildCommands(ClientID, GuildID),
@@ -60,13 +59,14 @@ client.on('interactionCreate', async (interaction) => {
     console.error(`Error executing command: ${error}`);
     interaction.reply({ content: 'There was an error while executing this command.', ephemeral: true });
   }
+  if (interaction.isButton()) {
+    await handleInteraction(interaction);
+  }
 });
 
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  await initPlayer(client).catch(err=>console.error(err)).finally(()=>{
-    console.log("Player initialized")
-  });
+  await initPlayer(client)
 });
 
 client.login(TOKEN);
