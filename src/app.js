@@ -14,7 +14,7 @@ const commandsPath = path.resolve('./src/commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 
-client.commands = new Discord.Collection(); // Cambié Client.commands a client.commands
+client.commands = new Discord.Collection();
 
 
 (async () => {
@@ -23,7 +23,7 @@ client.commands = new Discord.Collection(); // Cambié Client.commands a client.
     try {
       const { default: command } = await import(`./commands/${commandFile}`);
       if (command && command.data && command.data.name) {
-        if (!client.commands.has(command.data.name)) { // Verificar duplicados
+        if (!client.commands.has(command.data.name)) {
           client.commands.set(command.data.name, command);
         }
       } else {
