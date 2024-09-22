@@ -9,10 +9,10 @@ export default {
   async execute(interaction) {
     const player = useMainPlayer();
     const queue = player.nodes.get(interaction.guildId);
+    await interaction.deferReply()
 
-    // Verificar si la cola existe y está pausada
     if (!queue || queue.node.isPlaying()) {
-      return interaction.reply({ content: 'No hay ninguna canción pausada.', ephemeral: true });
+      return interaction.editReply({ content: 'No hay ninguna canción pausada.', ephemeral: true });
     }
 
     queue.node.resume();

@@ -9,9 +9,10 @@ export default {
   async execute(interaction) {
     const player = useMainPlayer();
     const queue = player.nodes.get(interaction.guildId);
+    await interaction.deferReply();
 
     if (!queue || !queue.isPlaying()) {
-      return interaction.reply({ content: 'No hay ninguna canción reproduciéndose.', ephemeral: true });
+      return interaction.editReply({ content: 'No hay ninguna canción reproduciéndose.', ephemeral: true });
     }
 
     queue.node.pause();
