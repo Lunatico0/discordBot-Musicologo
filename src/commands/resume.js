@@ -16,6 +16,6 @@ export default {
     }
 
     queue.node.resume();
-    interaction.reply({ content: '▶️ Canción reanudada.' });
+    interaction.editReply({ content: '▶️ Canción reanudada.' });
   }
 };

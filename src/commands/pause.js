@@ -15,6 +15,6 @@ export default {
     }
 
     queue.node.pause();
-    interaction.reply({ content: '⏸️ Canción pausada.' });
+    interaction.editReply({ content: '⏸️ Canción pausada.' });
   }
 };

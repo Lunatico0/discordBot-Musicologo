@@ -16,6 +16,6 @@ export default {
 
     queue.delete();
 
-    interaction.reply({ content: '⏹️ Música detenida y bot desconectado.' });
+    interaction.editReply({ content: '⏹️ Música detenida y bot desconectado.' });
   }
 };

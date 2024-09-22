@@ -48,6 +48,11 @@ client.commands = new Discord.Collection();
 })();
 
 client.on('interactionCreate', async (interaction) => {
+
+  if (interaction.isButton()) {
+    await handleInteraction(interaction);
+  }
+
   if (!interaction.isCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
@@ -59,9 +64,7 @@ client.on('interactionCreate', async (interaction) => {
     console.error(`Error executing command: ${error}`);
     interaction.reply({ content: 'There was an error while executing this command.', ephemeral: true });
   }
-  if (interaction.isButton()) {
-    await handleInteraction(interaction);
-  }
+
 });
 
 client.on('ready', async () => {

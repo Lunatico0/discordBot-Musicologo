@@ -10,7 +10,7 @@ export default {
   async execute(interaction) {
     const player = useMainPlayer()
     const queue = player.nodes.get(interaction.guildId);
-    console.log(queue)
+
     if (!queue || !queue.tracks.data.length) {
       return interaction.reply({ content: 'No hay canciones en la cola.', ephemeral: true });
     }

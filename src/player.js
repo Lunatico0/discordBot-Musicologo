@@ -7,10 +7,10 @@ let player;
 export const initPlayer = async (client) => {
   player = new Player(client);
 
-  if(player) player.extractors.register(YoutubeiExtractor,{})
+  if (player) player.extractors.register(YoutubeiExtractor, {})
 
   player.events.on('audioTrackAdd', (queue, track) => {
-    if(queue.metadata && queue.metadata.channel && queue.isPlaying()){
+    if (queue.metadata && queue.metadata.channel && queue.isPlaying()) {
       queue.metadata.channel.send(`Se ha agregado a la cola **${track.cleanTitle}**!`);
     }
   })
@@ -31,7 +31,8 @@ export const updatePlayerEmbed = async (interaction, player) => {
   }
 
   // Embed de la canción actual
-  const currentTrack = queue.currentTrack;
+  let currentTrack = queue.currentTrack;
+
   const embed = new Discord.EmbedBuilder()
     .setTitle(currentTrack.title)
     .setURL(currentTrack.url)
@@ -71,7 +72,6 @@ export const updatePlayerEmbed = async (interaction, player) => {
         .setStyle(Discord.ButtonStyle.Danger),
     );
 
-  // Editar el mensaje existente con el nuevo embed
   await interaction.editReply({ embeds: [embed], components: [row] });
 };
 

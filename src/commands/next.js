@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from 'discord.js';
 import { useMainPlayer } from 'discord-player';
+import { updatePlayerEmbed } from '../player.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -8,13 +9,16 @@ export default {
 
   async execute(interaction) {
     const player = useMainPlayer();
+    await interaction.deferReply()
     const queue = player.nodes.get(interaction.guildId);
 
     if (!queue || !queue.isPlaying()) {
       return interaction.reply({ content: 'No hay ninguna canción en reproducción.', ephemeral: true });
     }
+    await updatePlayerEmbed(interaction, player);
 
-    queue.node.skip();
-    interaction.reply({ content: '⏭️ Canción saltada.' });
+      queue.node.skip();
+      interaction.editReply({ content: '⏭️ Canción saltada.' });
+    // interaction.reply({ content: '⏭️ Canción saltada.' });
   }
 };
