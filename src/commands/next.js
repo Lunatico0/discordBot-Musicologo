@@ -12,12 +12,13 @@ export default {
     await interaction.deferReply()
     const queue = player.nodes.get(interaction.guildId);
 
+
     if (!queue || !queue.isPlaying()) {
       return interaction.editReply({ content: 'No hay ninguna canción en reproducción.', ephemeral: true });
     }
-    await updatePlayerEmbed(interaction, player);
 
-      queue.node.skip();
-      interaction.editReply({ content: '⏭️ Canción saltada.' });
+    queue.node.skip();
+    await updatePlayerEmbed(interaction, player);
+    interaction.editReply({ content: '⏭️ Canción saltada.' });
   }
 };
