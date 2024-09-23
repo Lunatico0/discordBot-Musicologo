@@ -7,7 +7,7 @@ import { initPlayer } from './player.js';
 import { handleInteraction } from './controller.js';
 
 config();
-const TOKEN = process.env.Musicologo_TOKEN;
+const TOKEN = process.env.BOT_TOKEN;
 const ClientID = process.env.Client_ID;
 const client = new Client({ intents: 53608447 });
 const commandsPath = path.resolve('./src/commands');
