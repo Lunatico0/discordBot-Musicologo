@@ -5,7 +5,6 @@ export default {
     .setName('shutdown')
     .setDescription('Apaga el bot. Solo el administrador puede usar este comando.'),
   execute: async (interaction) => {
-    // Asegúrate de que solo el administrador o un usuario autorizado pueda ejecutar el comando
     const isAdmin = interaction.member.permissions.has('ADMINISTRATOR');
 
     if (!isAdmin) {
@@ -15,10 +14,8 @@ export default {
       });
     }
 
-    // Confirma la acción con el usuario
     await interaction.reply('Apagando el bot...');
 
-    // Desconectar el bot y apagar el proceso de Node.js
     await interaction.client.destroy();
     process.exit(0);
   },

@@ -36,7 +36,7 @@ export const updatePlayerEmbed = async (interaction, player) => {
     .setTitle(currentTrack.title)
     .setURL(currentTrack.url)
     .setThumbnail(currentTrack.thumbnail)
-    .setColor('#1DB954')
+    .setColor(0x1DB954)
     .addFields(
       { name: 'Artista', value: currentTrack.author, inline: true },
       { name: 'Duración', value: currentTrack.duration, inline: true },

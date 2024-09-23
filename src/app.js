@@ -17,12 +17,14 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 client.commands = new Discord.Collection();
 
 (async () => {
+  let comms = 0;
   for (const commandFile of commandFiles) {
     try {
       const { default: command } = await import(`./commands/${commandFile}`);
       if (command && command.data && command.data.name) {
         if (!client.commands.has(command.data.name)) {
           client.commands.set(command.data.name, command);
+          comms++
         }
       } else {
         console.log(`El comando en ${commandFile} no está correctamente estructurado.`);
@@ -31,6 +33,7 @@ client.commands = new Discord.Collection();
       console.error(`Error al cargar el comando ${commandFile}:`, error);
     }
   }
+  console.log(`Se cargaron: ${comms} comandos`)
 })();
 
 export const getPing = async () => {

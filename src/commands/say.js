@@ -9,7 +9,7 @@ export default {
         .setName('mensaje')
         .setDescription('El mensaje que quieres que escriba el bot')
         .setMinLength(3)
-        .setMaxLength(300)
+        .setMaxLength(500)
         .setRequired(true)
     ),
   execute: async (interaction) => {
