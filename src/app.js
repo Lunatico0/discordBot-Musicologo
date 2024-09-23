@@ -9,7 +9,7 @@ import { handleInteraction } from './controller.js';
 config();
 const TOKEN = process.env.Musicologo_TOKEN;
 const ClientID = process.env.Client_ID;
-const GuildID = process.env.Guild_ID;
+
 const client = new Client({ intents: 53608447 });
 const commandsPath = path.resolve('./src/commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -17,7 +17,7 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.commands = new Discord.Collection();
 
-
+// Cargar los comandos desde los archivos
 (async () => {
   for (const commandFile of commandFiles) {
     try {
@@ -33,22 +33,33 @@ client.commands = new Discord.Collection();
       console.error(`Error al cargar el comando ${commandFile}:`, error);
     }
   }
-
-  try {
-    await rest.put(
-      Discord.Routes.applicationGuildCommands(ClientID, GuildID),
-      {
-        body: client.commands.map((cmd) => cmd.data.toJSON()),
-      }
-    );
-    console.log(`Loaded ${client.commands.size} slash commands`);
-  } catch (error) {
-    console.error('Error loading commands:', error);
-  }
 })();
 
-client.on('interactionCreate', async (interaction) => {
+// Registrar comandos cuando el bot está listo
+client.on('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+  await initPlayer(client);
 
+  // Iterar sobre todos los servidores en los que el bot está presente
+  const guilds = client.guilds.cache;
+
+  guilds.forEach(async (guild) => {
+    try {
+      await rest.put(
+        Discord.Routes.applicationGuildCommands(ClientID, guild.id),
+        {
+          body: client.commands.map((cmd) => cmd.data.toJSON()),
+        }
+      );
+      console.log(`Registered slash commands for guild ${guild.name} (ID: ${guild.id})`);
+    } catch (error) {
+      console.error(`Error registering commands for guild ${guild.name} (ID: ${guild.id}):`, error);
+    }
+  });
+});
+
+// Manejar interacciones con botones y comandos
+client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton()) {
     await handleInteraction(interaction);
   }
@@ -64,12 +75,7 @@ client.on('interactionCreate', async (interaction) => {
     console.error(`Error executing command: ${error}`);
     interaction.reply({ content: 'There was an error while executing this command.', ephemeral: true });
   }
-
 });
 
-client.on('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  await initPlayer(client)
-});
-
+// Iniciar sesión con el bot
 client.login(TOKEN);

@@ -20,6 +20,6 @@ export default {
 
     // Desconectar el bot y apagar el proceso de Node.js
     await interaction.client.destroy();
-    process.exit(0); // Finaliza el proceso
+    process.exit(0);
   },
 };
