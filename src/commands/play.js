@@ -9,7 +9,7 @@ export default {
     .addStringOption((option) =>
       option
         .setName('query')
-        .setDescription('El mensaje que quieres que escriba el bot')
+        .setDescription('Cancion que quieras escuchar')
         .setMinLength(3)
         .setMaxLength(100)
         .setRequired(true)
