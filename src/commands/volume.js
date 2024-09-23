@@ -11,7 +11,7 @@ export default {
         .setRequired(true)),
 
   async execute(interaction) {
-    const volumeLevel = interaction.options.getInteger('level'); // Obtener el nivel de volumen ingresado
+    const volumeLevel = interaction.options.getInteger('level');
 
     if (volumeLevel < 1 || volumeLevel > 100) {
       return interaction.reply({ content: 'Por favor, selecciona un nivel de volumen entre 1 y 100.', ephemeral: true });
@@ -24,7 +24,7 @@ export default {
       return interaction.reply({ content: 'No hay ninguna canción reproduciéndose.', ephemeral: true });
     }
 
-    queue.node.setVolume(volumeLevel); // Ajustar el volumen
+    queue.node.setVolume(volumeLevel);
     return interaction.reply({ content: `🔊 Volumen ajustado a ${volumeLevel}%` });
   }
 };

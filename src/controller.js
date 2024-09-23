@@ -14,7 +14,7 @@ export const handleInteraction = async (interaction) => {
   if (!queue) {
     queue = player.nodes.create(interaction.guild, {
       metadata: interaction.channel,
-      volume: 50,
+      volume: 30,
       leaveOnEnd: false,
       leaveOnStop: false,
     });

@@ -9,11 +9,14 @@ export const initPlayer = async (client) => {
 
   if (player) player.extractors.register(YoutubeiExtractor, {})
 
-  player.events.on('audioTrackAdd', (queue, track) => {
-    if (queue.metadata && queue.metadata.channel && queue.isPlaying()) {
-      queue.metadata.channel.send(`Se ha agregado a la cola **${track.cleanTitle}**!`);
-    }
-  })
+    player.events.on('audioTrackAdd', (queue, track) => {
+      if (queue.tracks.length === 1) {
+        queue.node.setVolume(queue.volume);
+      }
+      if (queue.metadata && queue.metadata.channel && queue.isPlaying()) {
+        queue.metadata.channel.send(`Se ha agregado a la cola **${track.cleanTitle}**!`);
+      }
+    });
 
   player.on('error', (error) => {
     console.error('Player error:', error);
