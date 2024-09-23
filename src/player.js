@@ -30,7 +30,6 @@ export const updatePlayerEmbed = async (interaction, player) => {
     return interaction.editReply({ content: 'No hay canciones en la cola.' });
   }
 
-  // Embed de la canción actual
   let currentTrack = queue.currentTrack;
 
   const embed = new Discord.EmbedBuilder()
@@ -39,11 +38,11 @@ export const updatePlayerEmbed = async (interaction, player) => {
     .setThumbnail(currentTrack.thumbnail)
     .addFields(
       { name: 'Artista', value: currentTrack.author, inline: true },
-      { name: 'Duración', value: currentTrack.duration, inline: true }
+      { name: 'Duración', value: currentTrack.duration, inline: true },
+      { name: 'Volumen', value: `${queue.node.volume}%`, inline: true },
     )
     .setFooter({ text: `Requested by ${interaction.user.username}` });
 
-  // Embed de la cola
   const queueList = queue.tracks.map((track, index) => {
     return `${index + 1}. ${track.title} - ${track.author}`;
   }).join('\n');
@@ -66,10 +65,14 @@ export const updatePlayerEmbed = async (interaction, player) => {
         .setCustomId('next')
         .setLabel('Next')
         .setStyle(Discord.ButtonStyle.Secondary),
+        new Discord.ButtonBuilder()
+        .setCustomId('volume_down')
+        .setLabel('🔉-')
+        .setStyle(Discord.ButtonStyle.Success),
       new Discord.ButtonBuilder()
-        .setCustomId('exit')
-        .setLabel('Exit')
-        .setStyle(Discord.ButtonStyle.Danger),
+        .setCustomId('volume_up')
+        .setLabel('🔊+')
+        .setStyle(Discord.ButtonStyle.Success)
     );
 
   await interaction.editReply({ embeds: [embed], components: [row] });

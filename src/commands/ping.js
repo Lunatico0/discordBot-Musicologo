@@ -6,7 +6,7 @@ export default {
     .setName('ping')
     .setDescription('pong'),
   execute: async (interaction) => {
-    const ping = getPing(); // Llamas a la función que obtiene el ping
+    const ping = getPing();
     await interaction.reply(`El ping del BOT es ${ping}ms`);
   },
 };

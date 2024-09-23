@@ -9,7 +9,6 @@ import { handleInteraction } from './controller.js';
 config();
 const TOKEN = process.env.Musicologo_TOKEN;
 const ClientID = process.env.Client_ID;
-
 const client = new Client({ intents: 53608447 });
 const commandsPath = path.resolve('./src/commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
@@ -17,7 +16,6 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.commands = new Discord.Collection();
 
-// Cargar los comandos desde los archivos
 (async () => {
   for (const commandFile of commandFiles) {
     try {
@@ -35,12 +33,14 @@ client.commands = new Discord.Collection();
   }
 })();
 
-// Registrar comandos cuando el bot está listo
+export const getPing = async () => {
+  return client.ws.ping;
+}
+
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
   await initPlayer(client);
 
-  // Iterar sobre todos los servidores en los que el bot está presente
   const guilds = client.guilds.cache;
 
   guilds.forEach(async (guild) => {
@@ -58,7 +58,6 @@ client.on('ready', async () => {
   });
 });
 
-// Manejar interacciones con botones y comandos
 client.on('interactionCreate', async (interaction) => {
   if (interaction.isButton()) {
     await handleInteraction(interaction);
@@ -77,5 +76,4 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-// Iniciar sesión con el bot
 client.login(TOKEN);

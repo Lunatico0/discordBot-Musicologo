@@ -30,13 +30,15 @@ export default {
     }
 
     try {
+      if (!channel) {
+        return interaction.editReply("Debes estar en un canal de voz para reproducir");
+      }
       await player.play(channel, query, {
         nodeOptions: {
           metadata: interaction,
         }
       });
 
-      // Actualiza el embed con la canción actual y la cola
       await updatePlayerEmbed(interaction, player);
 
     } catch (e) {
