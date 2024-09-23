@@ -6,13 +6,12 @@ let player;
 
 export const initPlayer = async (client) => {
   player = new Player(client);
-
+  
   if (player) player.extractors.register(YoutubeiExtractor, {})
-
+    player.events.on('playerStart',(queue)=>{
+  queue.node.setVolume(30)
+    })
     player.events.on('audioTrackAdd', (queue, track) => {
-      if (queue.tracks.length === 1) {
-        queue.node.setVolume(queue.volume);
-      }
       if (queue.metadata && queue.metadata.channel && queue.isPlaying()) {
         queue.metadata.channel.send(`Se ha agregado a la cola **${track.cleanTitle}**!`);
       }

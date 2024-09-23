@@ -10,16 +10,15 @@ export const handleInteraction = async (interaction) => {
 
   const player = useMainPlayer();
   let queue = player.nodes.get(interaction.guildId);
-
+  
   if (!queue) {
     queue = player.nodes.create(interaction.guild, {
       metadata: interaction.channel,
-      volume: 30,
       leaveOnEnd: false,
       leaveOnStop: false,
     });
   }
-
+  
   if (!queue || !queue.isPlaying()) {
     return interaction.reply({ content: 'No hay ninguna canción reproduciéndose.', ephemeral: true });
   }
