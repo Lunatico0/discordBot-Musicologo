@@ -14,6 +14,6 @@ export default {
     ),
   execute: async (interaction) => {
     const message = interaction.options.getString('mensaje');
-    await interaction.reply({ content: `${message}`, ephemeral: true }).catch(console.error);
+    await interaction.reply({ content: `${message}` }).catch(console.error);
   },
 };
