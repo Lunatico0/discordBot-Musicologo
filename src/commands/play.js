@@ -38,7 +38,6 @@ export default {
           metadata: interaction,
         }
       });
-
       await updatePlayerEmbed(interaction, player);
 
     } catch (e) {
