@@ -1,0 +1,219 @@
+---
+import '../styles/global.css';
+import PlayerMockup from '../components/PlayerMockup';
+
+const INVITE_URL = 'https://discord.com/oauth2/authorize?client_id=1092997085143506995&permissions=277062473792&scope=bot+applications.commands';
+
+const commands = [
+  { name: '/play', desc: 'Busca y reproduce una canción de YouTube' },
+  { name: '/pause', desc: 'Pausa la reproducción actual' },
+  { name: '/resume', desc: 'Reanuda la reproducción pausada' },
+  { name: '/next', desc: 'Salta a la siguiente canción en la cola' },
+  { name: '/queue', desc: 'Muestra todas las canciones en la cola' },
+  { name: '/volume', desc: 'Ajusta el volumen de 1 a 100' },
+  { name: '/exit', desc: 'Detiene la música y desconecta el bot' },
+  { name: '/ping', desc: 'Muestra el ping WebSocket del bot' },
+  { name: '/avatar', desc: 'Muestra el avatar de un usuario' },
+  { name: '/say', desc: 'El bot repite tu mensaje' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Musicólogo — Bot de Música para Discord</title>
+  <meta name="description" content="Musicólogo es un bot de Discord para reproducir música desde YouTube con controles interactivos, cola de reproducción y comandos en español." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #0d0e12;
+      color: #faf8fe;
+      font-family: 'Manrope', sans-serif;
+    }
+    .font-headline { font-family: 'Space Grotesk', sans-serif; }
+    .tech-grid {
+      background-image:
+        linear-gradient(to right, rgba(129, 236, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(129, 236, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .glass-card {
+      background: rgba(36, 38, 43, 0.6);
+      backdrop-filter: blur(20px);
+    }
+    .glow-btn:hover {
+      box-shadow: 0 0 24px rgba(129, 236, 255, 0.4);
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 w-full z-50 bg-[#0d0e12]/80 backdrop-blur-xl border-b border-white/5">
+    <div class="flex justify-between items-center px-6 md:px-10 max-w-7xl mx-auto py-4">
+      <div class="font-headline text-xl font-bold tracking-tighter text-[#81ecff]">Musicólogo</div>
+      <div class="hidden md:flex items-center gap-8 text-sm">
+        <a href="#features" class="text-slate-400 hover:text-white transition-colors">Features</a>
+        <a href="#commands" class="text-slate-400 hover:text-white transition-colors">Comandos</a>
+        <a href="#preview" class="text-slate-400 hover:text-white transition-colors">Preview</a>
+      </div>
+      <a
+        href={INVITE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="bg-[#81ecff] text-[#005762] px-5 py-2.5 rounded-lg font-bold text-sm hover:bg-[#00d4ec] active:scale-95 transition-all duration-150 glow-btn"
+      >
+        Añadir al servidor
+      </a>
+    </div>
+  </nav>
+
+  <main class="pt-18">
+
+    <!-- HERO -->
+    <section class="relative min-h-screen flex items-center overflow-hidden">
+      <div class="absolute inset-0 tech-grid -z-10"></div>
+      <div class="absolute top-1/4 -right-20 w-96 h-96 bg-[#81ecff]/10 rounded-full blur-[120px]"></div>
+      <div class="absolute bottom-1/4 -left-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px]"></div>
+
+      <div class="max-w-7xl mx-auto px-6 md:px-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center py-24">
+        <div class="lg:col-span-6 space-y-8">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-[#81ecff]/10 border border-[#81ecff]/20 rounded-full">
+            <span class="w-2 h-2 rounded-full bg-[#81ecff] animate-pulse"></span>
+            <span class="text-[#81ecff] text-[10px] uppercase tracking-widest font-bold">Online · v2.1</span>
+          </div>
+
+          <h1 class="font-headline text-5xl md:text-7xl font-bold leading-[0.9] tracking-tighter">
+            Tu DJ<br/>personal en<br/><span class="text-[#81ecff] italic">Discord</span>
+          </h1>
+
+          <p class="text-lg text-slate-400 max-w-md leading-relaxed">
+            Reproducí música desde YouTube directo en tu servidor. Cola de reproducción, controles interactivos y comandos en español.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-4 pt-2">
+            <a
+              href={INVITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="bg-[#81ecff] text-[#005762] px-8 py-4 rounded-xl font-bold text-lg text-center hover:bg-[#00d4ec] glow-btn transition-all"
+            >
+              Añadir al servidor
+            </a>
+            <a
+              href="#commands"
+              class="bg-[#24262b] text-white px-8 py-4 rounded-xl font-bold text-lg text-center border border-white/5 hover:bg-[#2a2c32] transition-all"
+            >
+              Ver comandos
+            </a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <PlayerMockup client:load />
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="py-28 bg-[#18191e]">
+      <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="text-center mb-16">
+          <span class="text-[#81ecff] text-sm uppercase tracking-widest font-extrabold">¿Por qué Musicólogo?</span>
+          <h2 class="font-headline text-4xl md:text-5xl font-bold mt-3">Hecho para tu servidor</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[
+            { icon: '🎵', title: 'Reproducción desde YouTube', desc: 'Buscá cualquier canción por nombre o URL. Si está en YouTube, Musicólogo lo encuentra.' },
+            { icon: '🎛️', title: 'Controles con botones', desc: 'Pause, resume, next y volumen directo desde el embed. Sin necesidad de escribir comandos.' },
+            { icon: '🇦🇷', title: '100% en español', desc: 'Todos los mensajes, respuestas y embeds en español. Pensado para comunidades hispanohablantes.' },
+            { icon: '📋', title: 'Cola de reproducción', desc: 'Agregá múltiples canciones y visualizá las próximas en el embed. La cola avanza automáticamente.' },
+            { icon: '🔊', title: 'Control de volumen', desc: 'Ajustá el volumen de 1 a 100 con el comando /volume o con los botones del embed.' },
+            { icon: '⚡', title: 'Slash commands', desc: 'Comandos nativos de Discord con autocompletado. Sin prefijos, fácil para todos.' },
+          ].map(f => (
+            <div class="bg-[#121317] p-8 rounded-2xl hover:bg-[#1e1f24] transition-all duration-300">
+              <div class="mb-5 text-4xl">{f.icon}</div>
+              <h3 class="font-headline text-xl font-bold mb-3">{f.title}</h3>
+              <p class="text-slate-400 leading-relaxed text-sm">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMANDS -->
+    <section id="commands" class="py-28 bg-[#0d0e12]">
+      <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="text-center mb-16">
+          <span class="text-[#81ecff] text-sm uppercase tracking-widest font-extrabold">Referencia</span>
+          <h2 class="font-headline text-4xl md:text-5xl font-bold mt-3">Todos los comandos</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl mx-auto">
+          {commands.map((cmd) => (
+            <div class="flex items-start gap-4 p-4 bg-[#18191e] rounded-xl border border-white/5 hover:border-[#81ecff]/20 transition-all">
+              <span class="font-mono text-[#81ecff] font-bold text-sm shrink-0 pt-0.5">{cmd.name}</span>
+              <span class="text-slate-400 text-sm">{cmd.desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- PREVIEW -->
+    <section id="preview" class="py-28 bg-[#18191e]">
+      <div class="max-w-3xl mx-auto px-6 md:px-10">
+        <div class="text-center mb-16">
+          <span class="text-[#81ecff] text-sm uppercase tracking-widest font-extrabold">En acción</span>
+          <h2 class="font-headline text-4xl md:text-5xl font-bold mt-3">Así se ve en Discord</h2>
+          <p class="text-slate-400 mt-4 text-sm">Los controles son interactivos — probá los botones</p>
+        </div>
+        <PlayerMockup client:load />
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-28 bg-[#0d0e12] relative overflow-hidden">
+      <div class="absolute inset-0 tech-grid -z-10"></div>
+      <div class="absolute inset-0 flex items-center justify-center -z-10">
+        <div class="size-150 bg-[#81ecff]/5 rounded-full blur-[120px]"></div>
+      </div>
+      <div class="max-w-2xl mx-auto px-6 text-center space-y-8">
+        <h2 class="font-headline text-4xl md:text-6xl font-bold tracking-tighter">
+          Listo para escuchar<br/><span class="text-[#81ecff]">música?</span>
+        </h2>
+        <p class="text-slate-400 text-lg">
+          Añadí Musicólogo a tu servidor en segundos. Gratis, sin configuración.
+        </p>
+        <a
+          href={INVITE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block bg-[#81ecff] text-[#005762] px-12 py-5 rounded-xl font-bold text-xl hover:bg-[#00d4ec] glow-btn transition-all"
+        >
+          Añadir al servidor
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="py-10 bg-[#0d0e12] border-t border-white/5">
+    <div class="max-w-7xl mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-6 text-sm">
+      <div class="font-headline font-black text-[#81ecff] text-lg">Musicólogo</div>
+      <div class="flex gap-8">
+        <a href="https://github.com/Lunatico0/discordBot-Musicologo" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-white transition-colors">GitHub</a>
+        <a href={INVITE_URL} target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-white transition-colors">Añadir al servidor</a>
+      </div>
+      <div class="text-slate-600 text-xs">© 2024 Musicólogo. Todos los derechos reservados.</div>
+    </div>
+  </footer>
+
+</body>
+</html>
