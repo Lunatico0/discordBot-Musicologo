@@ -3,3 +3,4 @@ node_modules
 cookies.txt
 web/dist
 web/.astro
+.claude
