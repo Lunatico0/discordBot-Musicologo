@@ -1,81 +1,99 @@
-import Discord, { Client } from "discord.js";
-import fs from 'fs';
+import 'dotenv/config';
+import { Client, GatewayIntentBits, Collection } from 'discord.js';
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord.js';
+import { DisTube } from 'distube';
+import { YtDlpPlugin } from '@distube/yt-dlp';
+import ffmpeg from 'ffmpeg-static';
 import path from 'path';
-import { REST } from "@discordjs/rest";
-import { config } from "dotenv";
-import { initPlayer } from './player.js';
-import { handleInteraction } from './controller.js';
+import fs from 'fs';
+import { fileURLToPath, pathToFileURL } from 'url';
 
-config();
+// Hacer que ffmpeg-static sea encontrable por distube
+process.env.PATH = path.dirname(ffmpeg) + path.delimiter + process.env.PATH;
+
 const TOKEN = process.env.BOT_TOKEN;
-const ClientID = process.env.Client_ID;
-const client = new Client({ intents: 53608447 });
-const commandsPath = path.resolve('./src/commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-const rest = new REST({ version: '10' }).setToken(TOKEN);
+const CLIENT_ID = process.env.Client_ID;
 
-client.commands = new Discord.Collection();
-
-(async () => {
-  let comms = 0;
-  for (const commandFile of commandFiles) {
-    try {
-      const { default: command } = await import(`./commands/${commandFile}`);
-      if (command && command.data && command.data.name) {
-        if (!client.commands.has(command.data.name)) {
-          client.commands.set(command.data.name, command);
-          comms++
-        }
-      } else {
-        console.log(`El comando en ${commandFile} no está correctamente estructurado.`);
-      }
-    } catch (error) {
-      console.error(`Error al cargar el comando ${commandFile}:`, error);
-    }
-  }
-  console.log(`Se cargaron: ${comms} comandos`)
-})();
-
-export const getPing = async () => {
-  return client.ws.ping;
+if (!TOKEN || !CLIENT_ID) {
+  console.error('[Error] Faltan BOT_TOKEN o Client_ID en el .env');
+  process.exit(1);
 }
 
-client.on('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  await initPlayer(client);
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
-  const guilds = client.guilds.cache;
+const distube = new DisTube(client, {
+  plugins: [new YtDlpPlugin({ update: false })],
+});
 
-  guilds.forEach(async (guild) => {
-    try {
-      await rest.put(
-        Discord.Routes.applicationGuildCommands(ClientID, guild.id),
-        {
-          body: client.commands.map((cmd) => cmd.data.toJSON()),
-        }
-      );
-      console.log(`Registered slash commands for guild ${guild.name} (ID: ${guild.id})`);
-    } catch (error) {
-      console.error(`Error registering commands for guild ${guild.name} (ID: ${guild.id}):`, error);
+distube.on('playSong', (queue, song) => {
+  queue.textChannel.send(`Reproduciendo: **${song.name}** (${song.formattedDuration})`);
+});
+
+distube.on('addSong', (queue, song) => {
+  queue.textChannel.send(`Agregado a la cola: **${song.name}** (${song.formattedDuration})`);
+});
+
+distube.on('error', (error, queue) => {
+  console.error('[DisTube Error]', error);
+  if (queue?.textChannel) queue.textChannel.send(`Error: ${error.message}`);
+});
+
+// Carga recursiva de comandos
+client.commands = new Collection();
+
+const loadCommands = async (dir) => {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      await loadCommands(fullPath);
+    } else if (entry.name.endsWith('.js')) {
+      const { default: command } = await import(pathToFileURL(fullPath).href);
+      if (command?.data?.name) {
+        client.commands.set(command.data.name, command);
+        console.log(`[Commands] Cargado: /${command.data.name}`);
+      }
     }
-  });
+  }
+};
+
+client.once('clientReady', async () => {
+  console.log(`[Bot] Conectado como ${client.user.tag}`);
+
+  const commandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'commands');
+  await loadCommands(commandsDir);
+
+  const rest = new REST({ version: '10' }).setToken(TOKEN);
+  for (const guild of client.guilds.cache.values()) {
+    await rest.put(
+      Routes.applicationGuildCommands(CLIENT_ID, guild.id),
+      { body: client.commands.map(cmd => cmd.data.toJSON()) }
+    );
+    console.log(`[Commands] Registrados en: ${guild.name}`);
+  }
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (interaction.isButton()) {
-    await handleInteraction(interaction);
-  }
-
-  if (!interaction.isCommand()) return;
+  if (!interaction.isChatInputCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
-  if (!command) return interaction.reply({ content: 'No command found with that name.', ephemeral: true });
+  if (!command) return;
 
   try {
-    await command.execute(interaction);
+    await command.execute(interaction, distube);
   } catch (error) {
-    console.error(`Error executing command: ${error}`);
-    interaction.reply({ content: 'There was an error while executing this command.', ephemeral: true });
+    console.error(`[Error] /${interaction.commandName}:`, error);
+    const reply = { content: 'Ocurrió un error al ejecutar el comando.', ephemeral: true };
+    interaction.replied || interaction.deferred
+      ? interaction.editReply(reply)
+      : interaction.reply(reply);
   }
 });
 

@@ -1,2 +1,5 @@
 node_modules
 .env
+cookies.txt
+web/dist
+web/.astro
