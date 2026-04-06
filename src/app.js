@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './server.js';
 import { Client, GatewayIntentBits, Collection } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord.js';
