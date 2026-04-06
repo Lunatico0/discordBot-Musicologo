@@ -9,12 +9,3 @@ services:
         sync: false
       - key: Client_ID
         sync: false
-
-  - type: static
-    name: musicologo-landing
-    buildCommand: cd web && npm install && npm run build
-    staticPublishPath: web/dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
