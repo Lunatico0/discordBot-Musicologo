@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isWindows = process.platform === 'win32';
 const YTDLP_BIN = isWindows ? 'yt-dlp.exe' : 'yt-dlp';
 const YTDLP_PATH = path.resolve(__dirname, `../../../node_modules/@distube/yt-dlp/bin/${YTDLP_BIN}`);
-const COOKIES_PATH = '/etc/secrets/cookies.txt';
+const COOKIES_PATH = '/tmp/cookies.txt';
 
 const searchYouTube = (query) => new Promise((resolve, reject) => {
   const args = [
