@@ -12,29 +12,19 @@ if (!fs.existsSync(pluginPath)) {
 
 let content = fs.readFileSync(pluginPath, 'utf8');
 
-// Saltar si ya está parchado con la ruta correcta
-if (content.includes('import_fs.existsSync') && content.includes('/tmp/cookies.txt')) {
-  console.log('[patch-ytdlp] Already patched, skipping.');
-  process.exit(0);
+// 1. Agregar import de fs (si no está)
+if (!content.includes('var import_fs = __toESM(require("fs"));')) {
+  content = content.replace(
+    'var import_promises = __toESM(require("fs/promises"));',
+    'var import_promises = __toESM(require("fs/promises"));\nvar import_fs = __toESM(require("fs"));'
+  );
 }
 
-// Agregar import de fs
+// 2. Reemplazar el bloque resolve() completo — con o sin noCallHome, con o sin cookiesFlags
 content = content.replace(
-  'var import_promises = __toESM(require("fs/promises"));',
-  'var import_promises = __toESM(require("fs/promises"));\nvar import_fs = __toESM(require("fs"));'
-);
-
-// Parchar resolve(): quitar --no-call-home y agregar cookies
-content = content.replace(
-  `const info = await json(url, {
-      dumpSingleJson: true,
-      noWarnings: true,
-      noCallHome: true,
-      preferFreeFormats: true,
-      skipDownload: true,
-      simulate: true
-    }).catch`,
-  `const cookiesFlags = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
+  /async resolve\(url, options\) \{[\s\S]*?const info = await json\(url, \{[\s\S]*?\}\)\.catch/,
+  `async resolve(url, options) {
+    const cookiesFlags = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
     const info = await json(url, {
       dumpSingleJson: true,
       noWarnings: true,
@@ -45,17 +35,9 @@ content = content.replace(
     }).catch`
 );
 
-// Parchar getStreamURL(): quitar --no-call-home y agregar cookies
+// 3. Reemplazar el bloque getStreamURL() completo
 content = content.replace(
-  `const info = await json(song.url, {
-      dumpSingleJson: true,
-      noWarnings: true,
-      noCallHome: true,
-      preferFreeFormats: true,
-      skipDownload: true,
-      simulate: true,
-      format: "ba/ba*"
-    }).catch`,
+  /const info = await json\(song\.url, \{[\s\S]*?format: "ba\/ba\*"[\s\S]*?\}\)\.catch/,
   `const cookiesFlags2 = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
     const info = await json(song.url, {
       dumpSingleJson: true,
@@ -68,23 +50,23 @@ content = content.replace(
     }).catch`
 );
 
-// Parchar stderr para no romper JSON.parse con warnings
-content = content.replace(
-  `    process2.stderr?.on("data", (chunk) => {
+// 4. Parchar stderr (si no está)
+if (!content.includes('let stderrOutput')) {
+  content = content.replace(
+    `    process2.stderr?.on("data", (chunk) => {
       output += chunk;
     });`,
-  `    let stderrOutput = "";
+    `    let stderrOutput = "";
     process2.stderr?.on("data", (chunk) => {
       stderrOutput += chunk;
     });`
-);
-
-content = content.replace(
-  `    process2.on("close", (code) => {
+  );
+  content = content.replace(
+    `    process2.on("close", (code) => {
       if (code === 0) resolve(JSON.parse(output));
       else reject(new Error(output));
     });`,
-  `    process2.on("close", (code) => {
+    `    process2.on("close", (code) => {
       if (code === 0) {
         try { resolve(JSON.parse(output)); }
         catch (e) { reject(new Error(stderrOutput || output || "yt-dlp returned invalid JSON")); }
@@ -92,7 +74,8 @@ content = content.replace(
         reject(new Error(stderrOutput || output || "yt-dlp exited with code " + code));
       }
     });`
-);
+  );
+}
 
 fs.writeFileSync(pluginPath, content, 'utf8');
 console.log('[patch-ytdlp] Patched successfully.');
