@@ -1,8 +1,8 @@
 services:
-  - type: worker
+  - type: web
     name: discordbot-musicologo
     runtime: node
-    buildCommand: npm install
+    buildCommand: npm install && node scripts/patch-ytdlp.js
     startCommand: node src/app.js
     envVars:
       - key: BOT_TOKEN
