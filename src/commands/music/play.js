@@ -2,18 +2,28 @@ import { SlashCommandBuilder } from 'discord.js';
 import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const YTDLP_PATH = path.resolve(__dirname, '../../../node_modules/@distube/yt-dlp/bin/yt-dlp.exe');
+const isWindows = process.platform === 'win32';
+const YTDLP_BIN = isWindows ? 'yt-dlp.exe' : 'yt-dlp';
+const YTDLP_PATH = path.resolve(__dirname, `../../../node_modules/@distube/yt-dlp/bin/${YTDLP_BIN}`);
+const COOKIES_PATH = '/etc/secrets/cookies.txt';
 
 const searchYouTube = (query) => new Promise((resolve, reject) => {
-  const proc = spawn(YTDLP_PATH, [
+  const args = [
     `ytsearch1:${query}`,
     '--dump-single-json',
     '--skip-download',
     '--no-warnings',
     '--flat-playlist',
-  ]);
+  ];
+
+  if (fs.existsSync(COOKIES_PATH)) {
+    args.push('--cookies', COOKIES_PATH);
+  }
+
+  const proc = spawn(YTDLP_PATH, args);
 
   let stdout = '';
   proc.stdout.on('data', chunk => stdout += chunk);

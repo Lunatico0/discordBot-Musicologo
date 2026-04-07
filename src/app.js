@@ -6,6 +6,7 @@ import { Routes } from 'discord.js';
 import { DisTube } from 'distube';
 import { YtDlpPlugin } from '@distube/yt-dlp';
 import ffmpeg from 'ffmpeg-static';
+import fs from 'fs';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -31,7 +32,12 @@ const client = new Client({
 });
 
 const distube = new DisTube(client, {
-  plugins: [new YtDlpPlugin({ update: false })],
+  plugins: [new YtDlpPlugin({
+    update: true,
+    ytdlpArgs: fs.existsSync('/etc/secrets/cookies.txt')
+      ? ['--cookies', '/etc/secrets/cookies.txt']
+      : [],
+  })],
 });
 
 distube.on('playSong', (queue, song) => {
