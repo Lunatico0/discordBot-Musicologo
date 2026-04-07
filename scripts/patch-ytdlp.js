@@ -12,8 +12,8 @@ if (!fs.existsSync(pluginPath)) {
 
 let content = fs.readFileSync(pluginPath, 'utf8');
 
-// Saltar si ya está parchado
-if (content.includes('import_fs.existsSync')) {
+// Saltar si ya está parchado con la ruta correcta
+if (content.includes('import_fs.existsSync') && content.includes('/tmp/cookies.txt')) {
   console.log('[patch-ytdlp] Already patched, skipping.');
   process.exit(0);
 }

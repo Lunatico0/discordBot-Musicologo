@@ -89,6 +89,17 @@ client.once('clientReady', async () => {
   }
 });
 
+client.on('messageCreate', async (message) => {
+  if (message.author.bot || message.content !== '!test') return;
+  const voiceChannel = message.member?.voice?.channel;
+  if (!voiceChannel) return message.reply('Tenés que estar en un canal de voz.');
+  await message.reply('Probando reproducción...');
+  await distube.play(voiceChannel, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', {
+    textChannel: message.channel,
+    member: message.member,
+  });
+});
+
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
