@@ -4,13 +4,22 @@ import { REST } from '@discordjs/rest';
 import { Routes } from 'discord.js';
 import { DisTube } from 'distube';
 import { YtDlpPlugin } from '@distube/yt-dlp';
-import ffmpeg from 'ffmpeg-static';
+import ffmpegStatic from 'ffmpeg-static';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { execSync } from 'child_process';
 
-// Hacer que ffmpeg-static sea encontrable por distube
-process.env.PATH = path.dirname(ffmpeg) + path.delimiter + process.env.PATH;
+// Usar ffmpeg del sistema si está disponible, si no usar ffmpeg-static
+let ffmpegPath = null;
+try {
+  ffmpegPath = execSync('which ffmpeg', { encoding: 'utf8' }).trim();
+  console.log('[ffmpeg] Usando ffmpeg del sistema:', ffmpegPath);
+} catch {
+  ffmpegPath = ffmpegStatic;
+  console.log('[ffmpeg] Usando ffmpeg-static:', ffmpegPath);
+}
+process.env.PATH = path.dirname(ffmpegPath) + path.delimiter + process.env.PATH;
 
 // Copiar cookies a /tmp donde yt-dlp puede escribir
 const COOKIES_SRC = '/etc/secrets/cookies.txt';
