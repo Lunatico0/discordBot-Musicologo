@@ -8,7 +8,6 @@ import { YtDlpPlugin } from '@distube/yt-dlp';
 import ffmpeg from 'ffmpeg-static';
 import fs from 'fs';
 import path from 'path';
-import fs from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 
 // Hacer que ffmpeg-static sea encontrable por distube
