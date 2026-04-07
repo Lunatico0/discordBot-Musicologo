@@ -31,12 +31,7 @@ const client = new Client({
 });
 
 const distube = new DisTube(client, {
-  plugins: [new YtDlpPlugin({
-    update: true,
-    ytdlpArgs: fs.existsSync('/etc/secrets/cookies.txt')
-      ? ['--cookies', '/etc/secrets/cookies.txt']
-      : [],
-  })],
+  plugins: [new YtDlpPlugin({ update: true })],
 });
 
 distube.on('playSong', (queue, song) => {

@@ -61,13 +61,15 @@ export default {
     const input = interaction.options.getString('cancion');
     const isUrl = input.startsWith('http://') || input.startsWith('https://');
 
-    await interaction.reply(`Buscando **${input}**...`);
+    await interaction.deferReply();
+    await interaction.editReply(`Buscando **${input}**...`);
 
     let url = input;
     if (!isUrl) {
       try {
         url = await searchYouTube(input);
-      } catch {
+      } catch (e) {
+        console.error('[Search Error]', e.message);
         return interaction.editReply('No encontré ninguna canción con ese nombre.');
       }
     }
