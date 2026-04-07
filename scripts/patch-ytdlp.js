@@ -13,7 +13,7 @@ if (!fs.existsSync(pluginPath)) {
 let content = fs.readFileSync(pluginPath, 'utf8');
 
 // Si ya está parchado correctamente, no hacer nada
-if (content.includes('// @patched-cookies-v3')) {
+if (content.includes('// @patched-cookies-v4')) {
   console.log('[patch-ytdlp] Already patched, skipping.');
   process.exit(0);
 }
@@ -23,7 +23,7 @@ if (content.includes('// @patched-cookies-v3')) {
 content = content.replace(
   /async resolve\(url, options\) \{[\s\S]*?return new YtDlpSong\(this, info, options\);\s*\}/,
   `async resolve(url, options) {
-    // @patched-cookies-v3
+    // @patched-cookies-v4
     const cookiesFlags = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
     const info = await json(url, {
       dumpSingleJson: true,
