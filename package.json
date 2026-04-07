@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "type": "module",
   "scripts": {
-    "start": "node src/app.js",
+    "start": "node scripts/patch-ytdlp.js && node src/app.js",
     "dev": "node --watch src/app.js",
     "postinstall": "node scripts/patch-ytdlp.js"
   },
