@@ -30,6 +30,14 @@ if (fs.existsSync(COOKIES_SRC)) {
   console.log('[Cookies] Copiadas a /tmp/cookies.txt');
 }
 
+// Debug: mostrar líneas 145-160 del plugin para verificar el parche
+try {
+  const pluginPath = new URL('../node_modules/@distube/yt-dlp/dist/index.js', import.meta.url).pathname;
+  const lines = fs.readFileSync(pluginPath, 'utf8').split('\n').slice(144, 160);
+  console.log('[Plugin] Líneas 145-160:');
+  lines.forEach((l, i) => console.log(`  ${145+i}: ${l}`));
+} catch(e) { console.log('[Plugin] Error leyendo plugin:', e.message); }
+
 const TOKEN = process.env.BOT_TOKEN;
 const CLIENT_ID = process.env.Client_ID;
 
