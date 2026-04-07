@@ -31,7 +31,7 @@ const client = new Client({
 });
 
 const distube = new DisTube(client, {
-  plugins: [new YtDlpPlugin({ update: false })],
+  plugins: [new YtDlpPlugin({ update: true })],
 });
 
 distube.on('playSong', (queue, song) => {
