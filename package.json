@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "node --watch src/app.js",
-    "postinstall": "node -e \"import('@distube/yt-dlp').then(m => m.download()).catch(() => {})\""
+    "dev": "node --watch src/app.js"
   },
   "dependencies": {
     "@discordjs/opus": "^0.10.0",
