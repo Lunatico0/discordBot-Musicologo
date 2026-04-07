@@ -34,7 +34,7 @@ content = content.replace(
       skipDownload: true,
       simulate: true
     }).catch`,
-  `const cookiesFlags = import_fs.existsSync("/etc/secrets/cookies.txt") ? { cookies: "/etc/secrets/cookies.txt" } : {};
+  `const cookiesFlags = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
     const info = await json(url, {
       dumpSingleJson: true,
       noWarnings: true,
@@ -56,7 +56,7 @@ content = content.replace(
       simulate: true,
       format: "ba/ba*"
     }).catch`,
-  `const cookiesFlags2 = import_fs.existsSync("/etc/secrets/cookies.txt") ? { cookies: "/etc/secrets/cookies.txt" } : {};
+  `const cookiesFlags2 = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
     const info = await json(song.url, {
       dumpSingleJson: true,
       noWarnings: true,

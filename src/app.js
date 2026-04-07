@@ -13,6 +13,14 @@ import { fileURLToPath, pathToFileURL } from 'url';
 // Hacer que ffmpeg-static sea encontrable por distube
 process.env.PATH = path.dirname(ffmpeg) + path.delimiter + process.env.PATH;
 
+// Copiar cookies a /tmp donde yt-dlp puede escribir
+const COOKIES_SRC = '/etc/secrets/cookies.txt';
+const COOKIES_DST = '/tmp/cookies.txt';
+if (fs.existsSync(COOKIES_SRC)) {
+  fs.copyFileSync(COOKIES_SRC, COOKIES_DST);
+  console.log('[Cookies] Copiadas a /tmp/cookies.txt');
+}
+
 const TOKEN = process.env.BOT_TOKEN;
 const CLIENT_ID = process.env.Client_ID;
 
