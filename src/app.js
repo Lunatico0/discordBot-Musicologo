@@ -42,6 +42,7 @@ const distube = new DisTube(client, {
 });
 
 distube.on('playSong', (queue, song) => {
+  console.log('[DisTube] playSong:', song.name, '| streamURL:', song.streamURL?.slice(0, 80));
   queue.textChannel.send(`Reproduciendo: **${song.name}** (${song.formattedDuration})`);
 });
 
@@ -52,6 +53,18 @@ distube.on('addSong', (queue, song) => {
 distube.on('error', (error, queue) => {
   console.error('[DisTube Error]', error);
   if (queue?.textChannel) queue.textChannel.send(`Error: ${error.message}`);
+});
+
+distube.on('disconnect', (queue) => {
+  console.log('[DisTube] disconnect');
+});
+
+distube.on('finishSong', (queue, song) => {
+  console.log('[DisTube] finishSong:', song.name);
+});
+
+distube.on('ffmpegDebug', (debug) => {
+  console.log('[ffmpeg]', debug);
 });
 
 // Carga recursiva de comandos
