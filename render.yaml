@@ -2,7 +2,7 @@ services:
   - type: web
     name: discordbot-musicologo
     runtime: node
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: node src/app.js
     envVars:
       - key: BOT_TOKEN
