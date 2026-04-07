@@ -12,18 +12,18 @@ if (!fs.existsSync(pluginPath)) {
 
 let content = fs.readFileSync(pluginPath, 'utf8');
 
-// 1. Agregar import de fs (si no está)
-if (!content.includes('var import_fs = __toESM(require("fs"));')) {
-  content = content.replace(
-    'var import_promises = __toESM(require("fs/promises"));',
-    'var import_promises = __toESM(require("fs/promises"));\nvar import_fs = __toESM(require("fs"));'
-  );
+// Si ya está parchado correctamente, no hacer nada
+if (content.includes('// @patched-cookies-v3')) {
+  console.log('[patch-ytdlp] Already patched, skipping.');
+  process.exit(0);
 }
 
-// 2. Reemplazar el bloque resolve() completo — con o sin noCallHome, con o sin cookiesFlags
+// Si tiene el marcador de versión anterior o está doblemente parchado, restaurar desde cero
+// Reemplazamos el bloque resolve() completo sin importar su estado
 content = content.replace(
-  /async resolve\(url, options\) \{[\s\S]*?const info = await json\(url, \{[\s\S]*?\}\)\.catch/,
+  /async resolve\(url, options\) \{[\s\S]*?return new YtDlpSong\(this, info, options\);\s*\}/,
   `async resolve(url, options) {
+    // @patched-cookies-v3
     const cookiesFlags = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
     const info = await json(url, {
       dumpSingleJson: true,
@@ -32,13 +32,35 @@ content = content.replace(
       skipDownload: true,
       simulate: true,
       ...cookiesFlags,
-    }).catch`
+    }).catch((e2) => {
+      throw new import_distube.DisTubeError("YTDLP_ERROR", \`\${e2.stderr || e2}\`);
+    });
+    if (isPlaylist(info)) {
+      if (info.entries.length === 0) throw new import_distube.DisTubeError("YTDLP_ERROR", "The playlist is empty");
+      return new import_distube.Playlist(
+        {
+          source: info.extractor,
+          songs: info.entries.map((i) => new YtDlpSong(this, i, options)),
+          id: info.id.toString(),
+          name: info.title,
+          url: info.webpage_url,
+          thumbnail: info.thumbnails?.[0]?.url
+        },
+        options
+      );
+    }
+    return new YtDlpSong(this, info, options);
+  }`
 );
 
-// 3. Reemplazar el bloque getStreamURL() completo
+// Reemplazamos el bloque getStreamURL() completo sin importar su estado
 content = content.replace(
-  /const info = await json\(song\.url, \{[\s\S]*?format: "ba\/ba\*"[\s\S]*?\}\)\.catch/,
-  `const cookiesFlags2 = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
+  /async getStreamURL\(song\) \{[\s\S]*?return info\.url;\s*\}/,
+  `async getStreamURL(song) {
+    if (!song.url) {
+      throw new import_distube.DisTubeError("YTDLP_PLUGIN_INVALID_SONG", "Cannot get stream url from invalid song.");
+    }
+    const cookiesFlags = import_fs.existsSync("/tmp/cookies.txt") ? { cookies: "/tmp/cookies.txt" } : {};
     const info = await json(song.url, {
       dumpSingleJson: true,
       noWarnings: true,
@@ -46,34 +68,20 @@ content = content.replace(
       skipDownload: true,
       simulate: true,
       format: "ba/ba*",
-      ...cookiesFlags2,
-    }).catch`
+      ...cookiesFlags,
+    }).catch((e2) => {
+      throw new import_distube.DisTubeError("YTDLP_ERROR", \`\${e2.stderr || e2}\`);
+    });
+    if (isPlaylist(info)) throw new import_distube.DisTubeError("YTDLP_ERROR", "Cannot get stream URL of a entire playlist");
+    return info.url;
+  }`
 );
 
-// 4. Parchar stderr (si no está)
-if (!content.includes('let stderrOutput')) {
+// Asegurarse que import_fs existe
+if (!content.includes('var import_fs = __toESM(require("fs"));')) {
   content = content.replace(
-    `    process2.stderr?.on("data", (chunk) => {
-      output += chunk;
-    });`,
-    `    let stderrOutput = "";
-    process2.stderr?.on("data", (chunk) => {
-      stderrOutput += chunk;
-    });`
-  );
-  content = content.replace(
-    `    process2.on("close", (code) => {
-      if (code === 0) resolve(JSON.parse(output));
-      else reject(new Error(output));
-    });`,
-    `    process2.on("close", (code) => {
-      if (code === 0) {
-        try { resolve(JSON.parse(output)); }
-        catch (e) { reject(new Error(stderrOutput || output || "yt-dlp returned invalid JSON")); }
-      } else {
-        reject(new Error(stderrOutput || output || "yt-dlp exited with code " + code));
-      }
-    });`
+    'var import_promises = __toESM(require("fs/promises"));',
+    'var import_promises = __toESM(require("fs/promises"));\nvar import_fs = __toESM(require("fs"));'
   );
 }
 
