@@ -16,9 +16,19 @@ process.env.PATH = path.dirname(ffmpeg) + path.delimiter + process.env.PATH;
 // Copiar cookies a /tmp donde yt-dlp puede escribir
 const COOKIES_SRC = '/etc/secrets/cookies.txt';
 const COOKIES_DST = '/tmp/cookies.txt';
+console.log('[Cookies] Buscando en:', COOKIES_SRC, '→ existe:', fs.existsSync(COOKIES_SRC));
 if (fs.existsSync(COOKIES_SRC)) {
   fs.copyFileSync(COOKIES_SRC, COOKIES_DST);
-  console.log('[Cookies] Copiadas a /tmp/cookies.txt');
+  console.log('[Cookies] Copiadas a /tmp/cookies.txt → existe:', fs.existsSync(COOKIES_DST));
+} else {
+  console.log('[Cookies] ADVERTENCIA: no se encontró el archivo de cookies en /etc/secrets/');
+  // Listar /etc/secrets/ para ver qué hay
+  try {
+    const files = fs.readdirSync('/etc/secrets/');
+    console.log('[Cookies] Archivos en /etc/secrets/:', files);
+  } catch (e) {
+    console.log('[Cookies] No se pudo leer /etc/secrets/:', e.message);
+  }
 }
 
 const TOKEN = process.env.BOT_TOKEN;
