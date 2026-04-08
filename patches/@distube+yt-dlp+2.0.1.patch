@@ -1,0 +1,31 @@
+diff --git a/node_modules/@distube/yt-dlp/dist/index.js b/node_modules/@distube/yt-dlp/dist/index.js
+index b17b126..e166b61 100644
+--- a/node_modules/@distube/yt-dlp/dist/index.js
++++ b/node_modules/@distube/yt-dlp/dist/index.js
+@@ -77,8 +77,8 @@ var json = /* @__PURE__ */ __name((url, flags, options) => {
+     process2.stdout?.on("data", (chunk) => {
+       output += chunk;
+     });
+-    process2.stderr?.on("data", (chunk) => {
+-      output += chunk;
++    process2.stderr?.on("data", (_chunk) => {
++      // stderr no va al output para no romper el JSON parse
+     });
+     process2.on("close", (code) => {
+       if (code === 0) resolve(JSON.parse(output));
+@@ -144,7 +144,6 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+     const info = await json(url, {
+       dumpSingleJson: true,
+       noWarnings: true,
+-      noCallHome: true,
+       preferFreeFormats: true,
+       skipDownload: true,
+       simulate: true
+@@ -174,7 +173,6 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+     const info = await json(song.url, {
+       dumpSingleJson: true,
+       noWarnings: true,
+-      noCallHome: true,
+       preferFreeFormats: true,
+       skipDownload: true,
+       simulate: true,

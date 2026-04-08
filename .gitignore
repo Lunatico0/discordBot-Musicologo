@@ -1,7 +1,7 @@
 node_modules
-!node_modules/@distube/yt-dlp/dist/index.js
 .env
 cookies.txt
 web/dist
 web/.astro
 .claude
+*-player-script.js

@@ -1,48 +1,24 @@
 import 'dotenv/config';
 import './server.js';
 import { Client, GatewayIntentBits, Collection } from 'discord.js';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord.js';
 import { DisTube } from 'distube';
 import { YtDlpPlugin } from '@distube/yt-dlp';
 import ffmpegStatic from 'ffmpeg-static';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
-import { execSync } from 'child_process';
 
-// Usar ffmpeg del sistema si está disponible, si no usar ffmpeg-static
-let ffmpegPath = null;
-try {
-  ffmpegPath = execSync('which ffmpeg', { encoding: 'utf8' }).trim();
-  console.log('[ffmpeg] Usando ffmpeg del sistema:', ffmpegPath);
-} catch {
-  ffmpegPath = ffmpegStatic;
-  console.log('[ffmpeg] Usando ffmpeg-static:', ffmpegPath);
-}
-process.env.PATH = path.dirname(ffmpegPath) + path.delimiter + process.env.PATH;
-
-// Copiar cookies a /tmp donde yt-dlp puede escribir
-const COOKIES_SRC = '/etc/secrets/cookies.txt';
-const COOKIES_DST = '/tmp/cookies.txt';
-if (fs.existsSync(COOKIES_SRC)) {
-  fs.copyFileSync(COOKIES_SRC, COOKIES_DST);
-  console.log('[Cookies] Copiadas a /tmp/cookies.txt');
+// En Render ffmpeg está en el sistema; en local usamos ffmpeg-static como fallback
+if (!process.env.RENDER) {
+  process.env.PATH = path.dirname(ffmpegStatic) + path.delimiter + process.env.PATH;
+  console.log('[ffmpeg] Static:', ffmpegStatic);
 }
 
-// Debug: mostrar líneas 145-160 del plugin para verificar el parche
-try {
-  const pluginPath = new URL('../node_modules/@distube/yt-dlp/dist/index.js', import.meta.url).pathname;
-  const lines = fs.readFileSync(pluginPath, 'utf8').split('\n').slice(144, 160);
-  console.log('[Plugin] Líneas 145-160:');
-  lines.forEach((l, i) => console.log(`  ${145+i}: ${l}`));
-} catch(e) { console.log('[Plugin] Error leyendo plugin:', e.message); }
-
-const TOKEN = process.env.BOT_TOKEN;
-const CLIENT_ID = process.env.Client_ID;
+const TOKEN     = process.env.BOT_TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
 
 if (!TOKEN || !CLIENT_ID) {
-  console.error('[Error] Faltan BOT_TOKEN o Client_ID en el .env');
+  console.error('[Error] Faltan BOT_TOKEN o CLIENT_ID en el .env');
   process.exit(1);
 }
 
@@ -59,33 +35,28 @@ const distube = new DisTube(client, {
   plugins: [new YtDlpPlugin({ update: true })],
 });
 
+// --- Eventos de DisTube ---
+
 distube.on('playSong', (queue, song) => {
-  console.log('[DisTube] playSong:', song.name, '| streamURL:', song.streamURL?.slice(0, 80));
-  queue.textChannel.send(`Reproduciendo: **${song.name}** (${song.formattedDuration})`);
+  console.log('[DisTube] Reproduciendo:', song.name);
+  queue.textChannel?.send(`Reproduciendo: **${song.name}** (${song.formattedDuration})`);
 });
 
 distube.on('addSong', (queue, song) => {
-  queue.textChannel.send(`Agregado a la cola: **${song.name}** (${song.formattedDuration})`);
+  queue.textChannel?.send(`Agregado a la cola: **${song.name}** (${song.formattedDuration})`);
 });
 
 distube.on('error', (error, queue) => {
-  console.error('[DisTube Error]', error);
-  if (queue?.textChannel) queue.textChannel.send(`Error: ${error.message}`);
+  console.error('[DisTube Error]', error.message);
+  queue?.textChannel?.send(`Error: ${error.message}`);
 });
 
-distube.on('disconnect', (queue) => {
-  console.log('[DisTube] disconnect');
+distube.on('finish', (queue) => {
+  console.log('[DisTube] Cola terminada');
 });
 
-distube.on('finishSong', (queue, song) => {
-  console.log('[DisTube] finishSong:', song.name);
-});
+// --- Carga de comandos ---
 
-distube.on('ffmpegDebug', (debug) => {
-  console.log('[ffmpeg]', debug);
-});
-
-// Carga recursiva de comandos
 client.commands = new Collection();
 
 const loadCommands = async (dir) => {
@@ -103,31 +74,36 @@ const loadCommands = async (dir) => {
   }
 };
 
+// --- Eventos del cliente ---
+
 client.once('clientReady', async () => {
   console.log(`[Bot] Conectado como ${client.user.tag}`);
 
   const commandsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), 'commands');
-  await loadCommands(commandsDir);
-
-  const rest = new REST({ version: '10' }).setToken(TOKEN);
-  for (const guild of client.guilds.cache.values()) {
-    await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID, guild.id),
-      { body: client.commands.map(cmd => cmd.data.toJSON()) }
-    );
-    console.log(`[Commands] Registrados en: ${guild.name}`);
+  if (fs.existsSync(commandsDir)) {
+    await loadCommands(commandsDir);
   }
 });
 
+// Comando de prueba hardcodeado — sirve para verificar audio antes de tener slash commands
 client.on('messageCreate', async (message) => {
   if (message.author.bot || message.content !== '!test') return;
+
   const voiceChannel = message.member?.voice?.channel;
-  if (!voiceChannel) return message.reply('Tenés que estar en un canal de voz.');
-  await message.reply('Probando reproducción...');
-  await distube.play(voiceChannel, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', {
-    textChannel: message.channel,
-    member: message.member,
-  });
+  if (!voiceChannel) {
+    return message.reply('Tenés que estar en un canal de voz.');
+  }
+
+  try {
+    await message.reply('Reproduciendo canción de prueba...');
+    await distube.play(voiceChannel, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', {
+      textChannel: message.channel,
+      member: message.member,
+    });
+  } catch (error) {
+    console.error('[!test Error]', error.message);
+    message.channel.send(`Error: ${error.message}`);
+  }
 });
 
 client.on('interactionCreate', async (interaction) => {

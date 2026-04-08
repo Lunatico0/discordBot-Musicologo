@@ -1,11 +1,15 @@
 services:
   - type: web
-    name: discordbot-musicologo
+    name: musicologo-bot
     runtime: node
+    plan: free
     buildCommand: npm install
-    startCommand: npm run start
+    startCommand: npm start
+    healthCheckPath: /
     envVars:
       - key: BOT_TOKEN
         sync: false
-      - key: Client_ID
+      - key: CLIENT_ID
+        sync: false
+      - key: YT_COOKIES
         sync: false
