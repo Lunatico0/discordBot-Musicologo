@@ -3,7 +3,7 @@ services:
     name: musicologo-bot
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install && npx patch-package
     startCommand: npm start
     healthCheckPath: /
     envVars:

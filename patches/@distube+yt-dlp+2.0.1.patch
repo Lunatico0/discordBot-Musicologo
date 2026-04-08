@@ -1,19 +1,37 @@
 diff --git a/node_modules/@distube/yt-dlp/dist/index.js b/node_modules/@distube/yt-dlp/dist/index.js
-index b17b126..e166b61 100644
+index b17b126..c173814 100644
 --- a/node_modules/@distube/yt-dlp/dist/index.js
 +++ b/node_modules/@distube/yt-dlp/dist/index.js
-@@ -77,8 +77,8 @@ var json = /* @__PURE__ */ __name((url, flags, options) => {
+@@ -74,15 +74,25 @@ var json = /* @__PURE__ */ __name((url, flags, options) => {
+   const process2 = (0, import_node_child_process.spawn)(YTDLP_PATH, args(url, flags), options);
+   return new Promise((resolve, reject) => {
+     let output = "";
++    let errOutput = "";
      process2.stdout?.on("data", (chunk) => {
        output += chunk;
      });
--    process2.stderr?.on("data", (chunk) => {
+     process2.stderr?.on("data", (chunk) => {
 -      output += chunk;
-+    process2.stderr?.on("data", (_chunk) => {
-+      // stderr no va al output para no romper el JSON parse
++      errOutput += chunk;
      });
      process2.on("close", (code) => {
-       if (code === 0) resolve(JSON.parse(output));
-@@ -144,7 +144,6 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+-      if (code === 0) resolve(JSON.parse(output));
+-      else reject(new Error(output));
++      if (code === 0) {
++        try {
++          resolve(JSON.parse(output));
++        } catch (e) {
++          console.error("[yt-dlp] JSON parse error. stdout:", output.slice(0, 200), "stderr:", errOutput.slice(0, 200));
++          reject(new Error(errOutput || output || "JSON parse failed"));
++        }
++      } else {
++        console.error(`[yt-dlp] Exit code ${code}. stderr: ${errOutput.slice(0, 300)}`);
++        reject(new Error(errOutput || output || `exit code ${code}`));
++      }
+     });
+     process2.on("error", reject);
+   });
+@@ -144,7 +154,6 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(url, {
        dumpSingleJson: true,
        noWarnings: true,
@@ -21,7 +39,7 @@ index b17b126..e166b61 100644
        preferFreeFormats: true,
        skipDownload: true,
        simulate: true
-@@ -174,7 +173,6 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
+@@ -174,7 +183,6 @@ var YtDlpPlugin = class extends import_distube.PlayableExtractorPlugin {
      const info = await json(song.url, {
        dumpSingleJson: true,
        noWarnings: true,

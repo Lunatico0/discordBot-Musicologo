@@ -1,5 +1,7 @@
 import { SlashCommandBuilder } from 'discord.js';
 
+const isUrl = (str) => str.startsWith('http://') || str.startsWith('https://');
+
 export default {
   data: new SlashCommandBuilder()
     .setName('play')
@@ -18,11 +20,13 @@ export default {
     }
 
     const input = interaction.options.getString('cancion');
+    // DisTube+YtDlpPlugin solo resuelve URLs; para búsquedas hay que usar el prefijo ytsearch:
+    const query = isUrl(input) ? input : `ytsearch:${input}`;
 
     await interaction.deferReply();
     await interaction.editReply(`Buscando **${input}**...`);
 
-    await distube.play(voiceChannel, input, {
+    await distube.play(voiceChannel, query, {
       textChannel: interaction.channel,
       member: interaction.member,
     });
