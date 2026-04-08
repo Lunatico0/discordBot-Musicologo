@@ -14,6 +14,26 @@ if (!process.env.RENDER) {
   console.log('[ffmpeg] Static:', ffmpegStatic);
 }
 
+// Cookies de YouTube — necesarias en Render para evitar el bloqueo por IP de cloud
+if (process.env.YT_COOKIES) {
+  try {
+    const cookies = JSON.parse(process.env.YT_COOKIES);
+    const lines = ['# Netscape HTTP Cookie File'];
+    for (const c of cookies) {
+      const domain = c.domain || '.youtube.com';
+      const subdomains = domain.startsWith('.') ? 'TRUE' : 'FALSE';
+      const secure = c.secure ? 'TRUE' : 'FALSE';
+      const expiry = Math.floor(c.expirationDate ?? c.expires ?? (Date.now() / 1000 + 365 * 86400));
+      lines.push(`${domain}\t${subdomains}\t${c.path || '/'}\t${secure}\t${expiry}\t${c.name}\t${c.value}`);
+    }
+    fs.writeFileSync('/tmp/yt-cookies.txt', lines.join('\n'));
+    process.env.YTDLP_COOKIES_PATH = '/tmp/yt-cookies.txt';
+    console.log(`[Cookies] Escritas ${cookies.length} cookies en /tmp/yt-cookies.txt`);
+  } catch (e) {
+    console.error('[Cookies] Error al parsear YT_COOKIES:', e.message);
+  }
+}
+
 const TOKEN     = process.env.BOT_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 
